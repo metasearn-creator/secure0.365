@@ -1,0 +1,8 @@
+{
+  "name": "sk2c7e9b4a1d5f8a3b6c0d4e8f3a7b1c9",
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 90
+    }
+  }
+}

@@ -1,0 +1,6 @@
+Vercel Project: sk2c7e9b4a1d5f8a3b6c0d4e8f3a7b1c9
+Live URL: https://sk2c7e9b4a1d5f8a3b6c0d4e8f3a7b1c9.vercel.app
+Account: secure02access / metaseurn-creator
+TG Bot: @MyPacket365_bot
+TG Chat: @sirgarza
+Deploy command: vercel --prod --yes --force
